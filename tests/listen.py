@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import sys
-import socket
 import select
+import socket
+import sys
 
-host = '127.0.0.1'
+host = "0.0.0.0"
 port = 5555
 timeout = 3
 
@@ -40,48 +40,47 @@ try:
     s.bind((host, port))
     s.listen(timeout)
 except socket.error as e:
-    print('Failed to create socket: {0}').format(e)
+    print("Failed to create socket: {0}").format(e)
     sys.exit(1)
 
-print('[+] Listening for connections on {0}:{1}'.format(host, port))
+print("[+] Listening for connections on {0}:{1}".format(host, port))
 
-data = ''
+data = ""
 received_exit = False
 while not received_exit:
     conn, address = s.accept()
-    print('[+] Connection from {0}'.format(address))
+    print("[+] Connection from {0}".format(address))
     while 1:
         try:
-            readable, writable, exceptional = \
-                select.select([conn], [conn], [], timeout)
+            readable, writable, exceptional = select.select([conn], [conn], [], timeout)
         except select.error:
-            print('[+] Exception. Closing connection from {0}'.format(address))
+            print("[+] Exception. Closing connection from {0}".format(address))
             conn.shutdown(2)
             conn.close()
             break
         if readable:
             data = conn.recv(1024)
-        if data.endswith(u'\n'):
-            if data.startswith(u'status 3'):
+        if data.endswith(u"\n"):
+            if data.startswith(u"status 3"):
                 conn.send(status)
-                data = ''
-            elif data.startswith(u'state'):
+                data = ""
+            elif data.startswith(u"state"):
                 conn.send(state)
-                data = ''
-            elif data.startswith(u'version'):
+                data = ""
+            elif data.startswith(u"version"):
                 conn.send(version)
-                data = ''
-            elif data.startswith(u'load-stats'):
+                data = ""
+            elif data.startswith(u"load-stats"):
                 conn.send(stats)
-                data = ''
-            elif data.startswith(u'quit'):
-                print('[+] Closing connection from {0}'.format(address))
+                data = ""
+            elif data.startswith(u"quit"):
+                print("[+] Closing connection from {0}".format(address))
                 conn.shutdown(2)
                 conn.close()
-                data = ''
+                data = ""
                 break
-            elif data.startswith(u'exit'):
-                print('[+] Closing connection from {0}'.format(address))
+            elif data.startswith(u"exit"):
+                print("[+] Closing connection from {0}".format(address))
                 conn.shutdown(2)
                 conn.close()
                 s.close()
@@ -90,8 +89,8 @@ while not received_exit:
             else:
                 pass
         elif readable and writable:
-            print('[+] Closing connection from {0}'.format(address))
+            print("[+] Closing connection from {0}".format(address))
             conn.shutdown(2)
             conn.close()
             break
-print('[+] Closing socket: {0}:{1}'.format(host, port))
+print("[+] Closing socket: {0}:{1}".format(host, port))

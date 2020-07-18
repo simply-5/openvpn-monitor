@@ -1,0 +1,35 @@
+
+<article class="card mb-4">
+    <h3 class="card-header">Map View</h3>
+    <div class="card-body p-0">
+        <div id="map_canvas" style="height:50vh;"></div>
+        <script>
+            const map = L.map("map_canvas");
+            const centre = L.latLng({{ latitude }}, {{ longitude }});
+            map.setView(centre, 8);
+            const layer = new L.TileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {});
+            map.addLayer(layer);
+            const bounds = L.latLngBounds(centre);
+
+            /*
+            % for vkey, vpn in vpns:
+                % if "sessions" in vpn:
+                    bounds.extend(centre);
+                    % for skey, session in vpn["sessions"].items():
+                        % if "longitude" in session and "latitude" in session:
+                            var latlng = new L.latLng({{ session["latitude"] }}, {{ session["longitude"] }});
+                            bounds.extend(latlng);
+                            var client_marker = L.marker(latlng).addTo(map);
+                            var client_popup = L.popup().setLatLng(latlng);
+                            client_popup.setContent("{{ session["username"] }} - {{ session["remote_ip"] }}");
+                            client_marker.bindPopup(client_popup);
+                        % end
+                    % end
+                % end
+            % end
+
+            map.fitBounds(bounds);
+            */
+        </script>
+    </div>
+</article>

@@ -1,0 +1,186 @@
+<%
+    pingable = vpn["state"]["success"] == "SUCCESS"
+    connection = vpn["state"]["connected"]
+    nclients = vpn["stats"]["nclients"]
+    bytesin = vpn["stats"]["bytesin"]
+    bytesout = vpn["stats"]["bytesout"]
+    vpn_mode = vpn["state"]["mode"]
+    vpn_sessions = vpn["sessions"]
+    local_ip = vpn["state"]["local_ip"]
+    remote_ip = vpn["state"]["remote_ip"]
+    up_since = vpn["state"]["up_since"]
+    show_disconnect = vpn["show_disconnect"]
+%>
+<article class="card mb-4" id="{{ vpn["name"].lower().replace(" ", "_") }}">
+    <h4 class="card-header">{{ vpn["name"] }}</h4>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>VPN Mode</th>
+                        <th>Status</th>
+                        <th>Pingable</th>
+                        <th>Clients</th>
+                        <th>Total Bytes In</th>
+                        <th>Total Bytes Out</th>
+                        <th>Up Since</th>
+                        <th>Local IP Address</th>
+                        % if vpn_mode == "Client":
+                            <th>Remote IP Address</th>
+                        % end
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ vpn_mode }}</td>
+                        <td>{{ connection }}</td>
+                        <td>{{ pingable }}</td>
+                        <td>{{ nclients }}</td>
+                        <td><data value="{{ bytesin }}">{{ naturalsize(bytesin) }}</data></td>
+                        <td><data value="{{ bytesout }}">{{ naturalsize(bytesout) }}</data></td>
+                        <td>
+                            <time datetime="{{ up_since.isoformat() }}">
+                                {{ up_since.strftime(datetime_format) }}
+                            </time>
+                        </td>
+                        <td>
+                            <a href="https://{{ local_ip }}">{{ local_ip }}</a>
+                        </td>
+                        % if vpn_mode == "Client":
+                            <td>{{ remote_ip }}</td>
+                        % end
+                    </tr>
+                </tbody>
+            </table>
+        </li>
+        % if vpn_mode == "Client":
+            <li class="list-group-item table-responsive">
+                <table class="table table-sm table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tun-Tap-Read</th>
+                            <th>Tun-Tap-Write</th>
+                            <th>TCP-UDP-Read</th>
+                            <th>TCP-UDP-Write</th>
+                            <th>Auth-Read</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        % [session] = vpn_sessions.values() # unwrap single element set
+                        <tr>
+                            <td><data value="{{ session["tuntap_read"] }}">{{ naturalsize(session["tuntap_read"]) }}</data></td>
+                            <td><data value="{{ session["tuntap_write"] }}">{{ naturalsize(session["tuntap_write"]) }}</data></td>
+                            <td><data value="{{ session["tcpudp_read"] }}">{{ naturalsize(session["tcpudp_read"]) }}</data></td>
+                            <td><data value="{{ session["tcpudp_write"] }}">{{ naturalsize(session["tcpudp_write"]) }}</data></td>
+                            <td><data value="{{ session["auth_read"] }}">{{ naturalsize(session["auth_read"]) }}</data></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </li>
+        % elif vpn_mode == "Server" and nclients > 0:
+            <li class="list-group-item table-responsive">
+                <table class="table table-sm table-striped table-hover" data-sortable>
+                    <thead>
+                        <tr>
+                            <th>Username / Hostname</th>
+                            <th>VPN IP</th>
+                            <th>Remote IP</th>
+                            <th>Location</th>
+                            <th>Bytes In</th>
+                            <th>Bytes Out</th>
+                            <th>Connected Since</th>
+                            <th>Last Ping</th>
+                            <th>Time Online</th>
+                            % if show_disconnect:
+                                <th>Action</th>
+                            % end
+                        </tr>
+                    </thead>
+                    <tbody>
+                        % for session in vpn_sessions.values():
+                            <tr>
+                                <%
+                                    if session.get("location", None) is not None:
+                                        flag = f"images/flags/{session['location'].lower()}.png"
+                                        full_location = None
+                                        if "country" in session and session["country"] is not None:
+                                            country = session["country"]
+                                            full_location = country
+                                        elif "region" in session and session["region"] is not None:
+                                            region = session["region"]
+                                            full_location = f"{region}, {full_location}"
+                                        elif "city" in session and session["city"] is not None:
+                                            city = session["city"]
+                                            full_location = f"{city}, {full_location}"
+                                        elif session["location"] == "RFC1918":
+                                            city = "RFC1918"
+                                            country = "Internet"
+                                            full_location = f"{city}, {country}"
+                                            flag = "images/flags/rfc.png"
+                                        end
+                                    else:
+                                        flag = None
+                                        full_location = None
+                                    end
+                                %>
+                                <td>{{ session["username"] }}</td>
+                                <td>
+                                    <a href="http://{{ session["local_ip"] }}:8080" target="_blank">{{ session["local_ip"] }}</a>
+                                </td>
+                                <td>{{ session["remote_ip"] }}</td>
+                                <td>
+                                % if flag and full_location:
+                                    <img src="{{ flag }}" title="{{ full_location }}" alt="Flag for {{ full_location }}" />
+                                    {{ full_location }}
+                                % else:
+                                    Unknown
+                                % end
+                                </td>
+                                <td><data value="{{ session["bytes_recv"] }}">{{ naturalsize(session["bytes_recv"]) }}</data></td>
+                                <td><data value="{{ session["bytes_sent"] }}">{{ naturalsize(session["bytes_sent"]) }}</data></td>
+                                <td>
+                                    <time datetime="{{ session["connected_since"].isoformat() }}">
+                                        {{ session["connected_since"].strftime(datetime_format) }}
+                                    </time>
+                                </td>
+                                <td>
+                                % if "last_seen" in session:
+                                    <time datetime="{{ session["last_seen"].isoformat() }}">
+                                        {{ session["last_seen"].strftime(datetime_format) }}
+                                    </time>
+                                % else:
+                                    Unknown
+                                % end
+                                </td>
+                                <td>
+                                    <time datetime="{{ now - session["connected_since"] }}">
+                                        {{ str(now - session["connected_since"])[: -len(".000000")] }}
+                                    </time>
+                                </td>
+                                % if show_disconnect:
+                                    <td>
+                                        <form method="post">
+                                            <input type="hidden" name="vpn_id" value="{{ vpn_id }}">
+                                            % if "port" in session:
+                                                <input type="hidden" name="ip" value="{{ session["remote_ip"] }}">
+                                                <input type="hidden" name="port" value="{{ session["port"] }}">
+                                            % end
+                                            % if "client_id" in session:
+                                                <input type="hidden" name="client_id" value="{{ session["client_id"] }}">
+                                            % end
+                                            <button type="submit" class="btn btn-xs btn-danger">Disconnect</button>
+                                        </form>
+                                    </td>
+                                % end
+                            </tr>
+                        % end
+                    </tbody>
+                </table>
+            </li>
+        % end
+    </ul>
+    <div class="card-footer text-muted">
+        {{ vpn["release"] }}
+    </div>
+</article>
