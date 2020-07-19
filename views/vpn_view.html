@@ -45,7 +45,7 @@
                             </time>
                         </td>
                         <td>
-                            <a href="https://{{ local_ip }}">{{ local_ip }}</a>
+                            <a href="https://{{ local_ip }}" rel="noopener">{{ local_ip }}</a>
                         </td>
                         % if vpn_mode == "Client":
                             <td>{{ remote_ip }}</td>
@@ -126,7 +126,9 @@
                                 %>
                                 <td>{{ session["username"] }}</td>
                                 <td>
-                                    <a href="http://{{ session["local_ip"] }}:8080" target="_blank">{{ session["local_ip"] }}</a>
+                                    <a href="http://{{ session["local_ip"] }}:8080" target="_blank" rel="noopener">
+                                        {{ session["local_ip"] }}
+                                    </a>
                                 </td>
                                 <td>{{ session["remote_ip"] }}</td>
                                 <td>
