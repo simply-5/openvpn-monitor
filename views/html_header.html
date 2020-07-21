@@ -16,7 +16,7 @@
     % end
 
     <script>
-        function getCellValue(tr, index) {
+        function getCellValue(tr, index = 0) {
             const cell = tr.children[index]
             if (cell.childElementCount == 1) {
                 const child = cell.firstElementChild
@@ -26,10 +26,10 @@
                     return child.value
                 }
             }
-            return cell.innerText;
+            return cell.innerText || cell.textContent;
         }
 
-        function rowComparator(index, trA, trB) {
+        function rowComparator(trA, trB, index = 0) {
             let valueA = getCellValue(trA, index);
             let valueB = getCellValue(trB, index);
             if (!isNaN(valueA) && !isNaN(valueB)) {
@@ -46,7 +46,7 @@
             const index = [...th.parentElement.children].indexOf(th)
 
             Array.from(th.closest('table').querySelectorAll('tbody tr'))
-                .sort((trA, trB) => rowComparator(index, trA, trB) * (dir == "ascending" ? 1 : -1))
+                .sort((trA, trB) => rowComparator(trA, trB, index) * (dir == "ascending" ? 1 : -1))
                 .forEach(tr => tr.parentElement.appendChild(tr) );
         }
 

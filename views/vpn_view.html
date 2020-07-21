@@ -142,13 +142,19 @@
                                 <td><data value="{{ session["bytes_recv"] }}">{{ naturalsize(session["bytes_recv"]) }}</data></td>
                                 <td><data value="{{ session["bytes_sent"] }}">{{ naturalsize(session["bytes_sent"]) }}</data></td>
                                 <td>
-                                    <time datetime="{{ session["connected_since"].isoformat() }}">
+                                    <time
+                                        datetime="{{ session["connected_since"].isoformat(timespec='milliseconds') }}"
+                                        title="{{ session["connected_since"].isoformat() }}"
+                                    >
                                         {{ session["connected_since"].strftime(datetime_format) }}
                                     </time>
                                 </td>
                                 <td>
                                 % if "last_seen" in session:
-                                    <time datetime="{{ session["last_seen"].isoformat() }}">
+                                    <time
+                                        datetime="{{ session["last_seen"].isoformat(timespec='milliseconds') }}"
+                                        title="{{ session["last_seen"].isoformat() }}"
+                                    >
                                         {{ session["last_seen"].strftime(datetime_format) }}
                                     </time>
                                 % else:
@@ -156,8 +162,9 @@
                                 % end
                                 </td>
                                 <td>
-                                    <time datetime="{{ now - session["connected_since"] }}">
-                                        {{ str(now - session["connected_since"])[: -len(".000000")] }}
+                                    % delta = now - session["connected_since"]
+                                    <time datetime="P{{ delta.days }}T{{ delta.seconds }}S" title="{{ delta }}">
+                                        {{ str(delta)[: -len(".000000")] }}
                                     </time>
                                 </td>
                                 % if show_disconnect:

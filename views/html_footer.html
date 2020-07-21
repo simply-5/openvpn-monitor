@@ -5,7 +5,9 @@
             <div class="navbar-text">
                 Page automatically reloads every 5 minutes.
                 Last update:
-                <time datetime="{{ now.isoformat() }}" title="{{ now.isoformat() }}">{{ now.strftime(format) }}</time>
+                <time datetime="{{ now.isoformat(timespec='milliseconds') }}" title="{{ now.isoformat() }}">
+                    {{ now.strftime(format) }}
+                </time>
             </div>
         </div>
     </footer>
