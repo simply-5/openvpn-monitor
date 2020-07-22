@@ -35,11 +35,11 @@
             if (!isNaN(valueA) && !isNaN(valueB)) {
                 return valueA - valueB
             }
-            return valueA.localeCompare(valueB);
+            return valueA.localeCompare(valueB, undefined, {numeric: true});
         }
 
         function sortColumn(th) {
-            const dir = th.dataset["sortedDirection"] || "ascending";
+            const dir = th.dataset["sortedDirection"] || "ascending";  // use aria-sorted
             [...th.parentElement.children].forEach(header => delete header.dataset["sortedDirection"]);
             th.dataset["sortedDirection"] = dir === "ascending" ? "descending" : "ascending";
 
