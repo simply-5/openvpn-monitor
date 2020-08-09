@@ -81,7 +81,21 @@
         % elif vpn_mode == "Server" and nclients > 0:
             <li class="list-group-item table-responsive">
                 <table class="table table-sm table-striped table-hover" data-sortable>
-                    <thead>
+                    <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                        <col class="d-none">
+                        <col class="d-none">
+                        <col class="d-none">
+                        <col>
+                        <col>
+                        <col>
+                        % if show_disconnect:
+                            <col>
+                        % end
+                    </colgroup>
+                    <thead class="text-nowrap">
                         <tr>
                             <th>Username / Hostname</th>
                             <th>VPN IP</th>
@@ -127,10 +141,10 @@
                                 <td>{{ session["username"] }}</td>
                                 <td>
                                     <a href="http://{{ session["local_ip"] }}:8080" target="_blank" rel="noopener">
-                                        {{ session["local_ip"] }}
+                                        <code>{{ session["local_ip"] }}</code>
                                     </a>
                                 </td>
-                                <td>{{ session["remote_ip"] }}</td>
+                                <td><code>{{ session["remote_ip"] }}</code></td>
                                 <td>
                                 % if flag and full_location:
                                     <img src="{{ flag }}" title="{{ full_location }}" alt="Flag for {{ full_location }}" />
