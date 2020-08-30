@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import select
 import socket
@@ -59,27 +59,27 @@ while not received_exit:
             conn.close()
             break
         if readable:
-            data = conn.recv(1024)
-        if data.endswith(u"\n"):
-            if data.startswith(u"status 3"):
-                conn.send(status)
+            data = conn.recv(1024).decode()
+        if data.endswith("\n"):
+            if data.startswith("status 3"):
+                conn.send(status.encode())
                 data = ""
-            elif data.startswith(u"state"):
-                conn.send(state)
+            elif data.startswith("state"):
+                conn.send(state.encode())
                 data = ""
-            elif data.startswith(u"version"):
-                conn.send(version)
+            elif data.startswith("version"):
+                conn.send(version.encode())
                 data = ""
-            elif data.startswith(u"load-stats"):
-                conn.send(stats)
+            elif data.startswith("load-stats"):
+                conn.send(stats.encode())
                 data = ""
-            elif data.startswith(u"quit"):
+            elif data.startswith("quit"):
                 print("[+] Closing connection from {0}".format(address))
                 conn.shutdown(2)
                 conn.close()
                 data = ""
                 break
-            elif data.startswith(u"exit"):
+            elif data.startswith("exit"):
                 print("[+] Closing connection from {0}".format(address))
                 conn.shutdown(2)
                 conn.close()
