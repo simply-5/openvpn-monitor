@@ -19,14 +19,15 @@ import configparser
 import os
 import sys
 from datetime import datetime
-from logging import debug, info, warning
-from pprint import pformat
+from logging import info, warning
 
 import bottle
-from bottle import BaseTemplate, HTTPError, abort, request, static_file, template, view
+from bottle import BaseTemplate, HTTPError, request, static_file, view
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from openvpn_interface import OpenvpnMgmtInterface
-
 
 class ConfigLoader:
     def __init__(self, config_path="openvpn-monitor.conf"):
@@ -107,9 +108,6 @@ class FormatUtils:
 application = bottle.default_app()
 config = ConfigLoader()
 monitor = OpenvpnMgmtInterface(config.vpns, geoip_data=config.settings["geoip_data"])
-
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(__file__)
 
 BaseTemplate.defaults.update(
     {

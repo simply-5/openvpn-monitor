@@ -32,8 +32,6 @@ function sortColumn(th) {
         .forEach(tr => tr.parentElement.appendChild(tr) );
 }
 
-function initSorting() {
-    document.querySelectorAll('[data-sortable] th').forEach(
-        th => th.addEventListener('click', () => sortColumn(th))
-    );
-}
+document.querySelectorAll('[data-sortable] th').forEach(
+    th => th.addEventListener('click', () => sortColumn(th))
+);
