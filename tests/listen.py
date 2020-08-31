@@ -11,7 +11,7 @@ timeout = 3
 status = """TITLE	OpenVPN 2.3.10 x86_64-pc-linux-gnu [SSL (OpenSSL)] [LZO] [EPOLL] [PKCS11] [MH] [IPv6] built on Jan  4 2016\r
 TIME	Wed Mar 23 21:42:22 2016	1458729742\r
 HEADER	CLIENT_LIST	Common Name	Real Address	Virtual Address	Bytes Received	Bytes Sent	Connected Since	Connected Since (time_t)	Username\r
-CLIENT_LIST	furlongm	::ffff:59.167.120.210	10.10.10.6	369528	1216150	Wed Mar 23 21:40:15 2016	1458729615	furlongm\r
+CLIENT_LIST	furlongm	::ffff:59.167.120.210	10.8.0.13	369528	1216150	Wed Mar 23 21:40:15 2016	1458729615	furlongm\r
 CLIENT_LIST	furlongm	59.167.120.211:12345	10.10.10.7	12345	11615	Wed Mar 23 21:41:45 2016	1458729715	furlongm\r
 CLIENT_LIST	furlongm	2001:4860:4801:3::20	10.10.10.8	12345	11615	Wed Mar 23 21:43:25 2016	1458729815	furlongm\r
 HEADER	ROUTING_TABLE	Virtual Address	Common Name	Real Address	Last Ref	Last Ref (time_t)\r

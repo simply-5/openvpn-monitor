@@ -1,0 +1,6 @@
+<%
+rebase("base", navigation=navigation)
+for vpn_name, vpn in vpns.items():
+    include("components/vpn", vpn_name=vpn_name, vpn=vpn)
+end
+%>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }} - Status Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="300">
+    <meta name="description" content="Monitor VPN servers and clients">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css" integrity="sha384-r4NyP46KrjDleawBgD5tp8Y7UzmLA05oM1iAEQ17CSuDqnUK2+k9luXQOfXJCJ4I" crossorigin="anonymous">
+    <!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script> -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
+
+    <script src="/static/main.js" defer></script>
+    <link rel="stylesheet" href="/static/master.css">
+</head>
+<body class="d-flex flex-column h-100">
+    <header id="header" class="sticky-top navbar navbar-expand-sm navbar-dark bg-dark">
+        <nav class="container">
+            <a class="navbar-brand" href="/">
+                % if logo:
+                    <img src="/static/images/{{ logo }}" alt="Logo" class="rounded" style="height: 1.5em;">
+                % end
+                {{ title }} - Status Monitor
+            </a>
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbar"
+                aria-controls="navbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbar">
+                <ul class="navbar-nav">
+                    % for label, anchor in get("navigation", {}).items():
+                        % if isinstance(anchor, dict):
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">{{ label }}</a>
+                                <ul class="dropdown-menu">
+                                    % for sublabel, subanchor in anchor.items():
+                                        <li><a class="dropdown-item" href="#{{ subanchor }}">{{ sublabel }}</a></li>
+                                    % end
+                                </ul>
+                            </li>
+                        % else:
+                            <li><a href="#{{ anchor }}" class="nav-link">{{ label }}</a></li>
+                        % end
+                    % end
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!--
+        <nav aria-label="breadcrumb"  aria-current="page">
+            <ol class="breadcrumb">
+                % for label, url in get("breadcrumb", {"Home": "/"}).items():
+                <li class="breadcrumb-item"><a href="{{ url }}">{{ label }}</a></li>
+                % end
+            </ol>
+        </nav>
+    -->
+    <main id="main" class="flex-grow-1{{ ' container-xl' if not get('fullpage', False) else '' }}">
+        {{ !get("base", "There seems to be no content.") }}
+    </main>
+    <footer id="footer" class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <div class="navbar-text">
+                Page automatically reloads every 5 minutes.
+                Last update:
+                {{ !util.datetime(now) }}
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

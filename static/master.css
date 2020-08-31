@@ -1,0 +1,12 @@
+table[data-sortable] th {
+    cursor: pointer;
+}
+table[data-sortable] th[data-sorted-direction="ascending"]::after {
+    content: "▲";
+    padding-left: .5em;
+}
+
+table[data-sortable] th[data-sorted-direction="descending"]::after {
+    content: "▼";
+    padding-left: .5em;
+}
