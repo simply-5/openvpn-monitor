@@ -72,20 +72,20 @@ class ConfigLoader:
         }
 
 
-def naturalsize(quantity, *, decimal_places=1, space="\u00A0", unit="B"):
-    for prefix in ["", "Ki", "Mi", "Gi", "Ti", "Pi"]:
-        if abs(quantity) < 1024.0 or prefix == "Pi":
-            break
-        quantity /= 1024.0
-    return f"{quantity:.{decimal_places}f}{space}{prefix}{unit}"
-
-
 class FormatUtils:
     @staticmethod
-    def data(size):
+    def naturalsize(quantity, *, decimal_places=1, space="\u00A0", unit="B"):
+        for prefix in ["", "Ki", "Mi", "Gi", "Ti", "Pi"]:
+            if abs(quantity) < 1024.0 or prefix == "Pi":
+                break
+            quantity /= 1024.0
+        return f"{quantity:.{decimal_places}f}{space}{prefix}{unit}"
+
+    @classmethod
+    def data(cls, size):
         return f"""
             <data value="{ size }" title="{ size }">
-                { naturalsize(size) }
+                { cls.naturalsize(size) }
             </data>"""
 
     @staticmethod
@@ -114,7 +114,7 @@ BaseTemplate.defaults.update(
         "util": FormatUtils(),
         "title": config.settings["site"],
         "logo": config.settings["logo"],
-        "now": datetime.now(),
+        "now": datetime.now,
     }
 )
 

@@ -158,7 +158,7 @@
                                     Unknown
                                 % end
                                 </td>
-                                <td>{{ !util.timedelta(now - session["connected_since"]) }}</td>
+                                <td>{{ !util.timedelta(now() - session["connected_since"]) }}</td>
                                 % if vpn["show_disconnect"]:
                                     <td>
                                         <form method="post">
