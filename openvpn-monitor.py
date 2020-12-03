@@ -17,6 +17,7 @@
 
 import configparser
 import os
+import subprocess
 import sys
 from datetime import datetime
 from logging import info, warning
@@ -28,6 +29,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from openvpn_interface import OpenvpnMgmtInterface
+
 
 class ConfigLoader:
     def __init__(self, config_path="openvpn-monitor.conf"):
@@ -145,9 +147,25 @@ def render_vpn(vpn):
 def render_client(vpn, client):
     try:
         client = monitor.vpns[vpn]["sessions"][client]
-        return {"address": f"http://{client['local_ip']}:8080"}
     except KeyError:
         raise HTTPError(404, "Client not found")
+    return {"address": f"http://{client['local_ip']}:8080"}
+
+
+@application.route("/vpns/<vpn>/clients/<client>/ip")
+@view("iframe")
+def render_client(vpn, client):
+    try:
+        client = monitor.vpns[vpn]["sessions"][client]
+    except KeyError:
+        raise HTTPError(404, "Client not found")
+    response = subprocess.run(
+        ["ssh", f"pi@client['local_ip']", "ip", "-4", "addr", "show", "eth0"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return response.stdout
 
 
 @application.hook("before_request")
