@@ -95,6 +95,7 @@
                             <th>Username</th>
                             <th>VPN IP</th>
                             <th>Remote IP</th>
+                            <th>Local IP</th>
                             <th>Location</th>
                             <th>Bytes In</th>
                             <th>Bytes Out</th>
@@ -133,6 +134,11 @@
                                 </td>
                                 <td><code>{{ session["local_ip"] }}</code></td>
                                 <td><code>{{ session["remote_ip"] }}</code></td>
+                                <td>
+                                    <a href="/vpns/{{ vpn_name }}/clients/{{ session['local_ip'] }}/ip">
+                                        show
+                                    </a>
+                                </td>
                                 <td>
                                 % if flag and full_location:
                                     <img
