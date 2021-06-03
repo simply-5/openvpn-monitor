@@ -160,7 +160,8 @@ def render_client(vpn, client):
     except KeyError:
         raise HTTPError(404, "Client not found")
     response = subprocess.run(
-        ["ssh", f"pi@client['local_ip']", "ip", "-4", "addr", "show", "eth0"],
+        # the actuall command gets overwritten by key options anyhow
+        ["ssh", f"pi@{client['local_ip']}", "ip", "-4", "addr", "show", "eth0"],
         check=True,
         capture_output=True,
         text=True,
