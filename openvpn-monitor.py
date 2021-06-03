@@ -153,7 +153,7 @@ def render_client(vpn, client):
 
 
 @application.route("/vpns/<vpn>/clients/<client>/ip")
-@view("iframe")
+@view("preformatted")
 def render_client(vpn, client):
     try:
         client = monitor.vpns[vpn]["sessions"][client]
@@ -161,12 +161,21 @@ def render_client(vpn, client):
         raise HTTPError(404, "Client not found")
     response = subprocess.run(
         # the actuall command gets overwritten by key options anyhow
-        ["ssh", f"pi@{client['local_ip']}", "ip", "-4", "addr", "show", "eth0"],
+        [
+            "ssh",
+            "-o",
+            "StrictHostKeyChecking=accept-new",
+            f"pi@{client['local_ip']}",
+            "ip",
+            "addr",
+            "show",
+            "eth0",
+        ],
         check=True,
         capture_output=True,
         text=True,
     )
-    return response.stdout
+    return {"text": response.stdout}
 
 
 @application.hook("before_request")
