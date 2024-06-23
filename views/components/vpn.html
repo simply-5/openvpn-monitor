@@ -96,9 +96,6 @@
                             <th>VPN IP</th>
                             <th>Remote IP</th>
                             <th>Local IP</th>
-                            <th>Location</th>
-                            <th>Bytes In</th>
-                            <th>Bytes Out</th>
                             <th>Connected Since</th>
                             <th>Last Ping</th>
                             <th>Time Online</th>
@@ -110,23 +107,6 @@
                     <tbody>
                         % for session in vpn["sessions"].values():
                             <tr>
-                                <%
-                                    flag = None
-                                    full_location = ""
-                                    if session.get("location"):
-                                        if session["location"] == "RFC1918":
-                                            flag = "rfc.png"
-                                            full_location = "RFC1918"
-                                        else:
-                                            flag = f"{session['location'].lower()}.png"
-                                            full_location = ", ".join(filter([
-                                                session.get("city"),
-                                                session.get("region"),
-                                                session.get("country"),
-                                            ]))
-                                        end
-                                    end
-                                %>
                                 <td>
                                     <a href="/vpns/{{ vpn_name }}/clients/{{ session['local_ip'] }}">
                                         {{ session["username"] }}
@@ -139,20 +119,6 @@
                                         show
                                     </a>
                                 </td>
-                                <td>
-                                % if flag and full_location:
-                                    <img
-                                        src="/static/images/flags/{{ flag }}"
-                                        title="{{ full_location }}"
-                                        alt="Flag for {{ full_location }}"
-                                    />
-                                    {{ full_location }}
-                                % else:
-                                    Unknown
-                                % end
-                                </td>
-                                <td class="text-right">{{ !util.data(session["bytes_recv"]) }}</td>
-                                <td class="text-right">{{ !util.data(session["bytes_sent"]) }}</td>
                                 <td>{{ !util.datetime(session["connected_since"]) }}</td>
                                 <td>
                                 % if "last_seen" in session:
