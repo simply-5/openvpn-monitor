@@ -142,6 +142,14 @@ def render_vpn(vpn):
         raise HTTPError(404, "VPN not found")
 
 
+@application.route("/vpns/<vpn>/json")
+def return_ansible_hosts(vpn):
+    try:
+        return monitor.vpns[vpn]["sessions"]
+    except KeyError:
+        raise HTTPError(404, "VPN not found")
+
+
 @application.route("/vpns/<vpn>/clients/<client>")
 @view("iframe")
 def render_client(vpn, client):
