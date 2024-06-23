@@ -16,6 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>
 
 import configparser
+from ipaddress import IPv4Address, IPv6Address
+import json
 import os
 import subprocess
 import sys
@@ -142,10 +144,25 @@ def render_vpn(vpn):
         raise HTTPError(404, "VPN not found")
 
 
+class ExtendedJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        elif isinstance(obj, (IPv4Address, IPv6Address)):
+            return str(obj)
+        # Let the base class default method raise the TypeError
+        return super().default(obj)
+
+
 @application.route("/vpns/<vpn>/json")
 def return_ansible_hosts(vpn):
     try:
-        return monitor.vpns[vpn]["sessions"]
+        # We cannot tell bottle which encoder to use
+        # so we convert everything ourselves first
+        # and then let bottle do the rest (set the content-type header etc.)
+        return json.loads(
+            json.dumps(monitor.vpns[vpn]["sessions"], cls=ExtendedJSONEncoder)
+        )
     except KeyError:
         raise HTTPError(404, "VPN not found")
 
