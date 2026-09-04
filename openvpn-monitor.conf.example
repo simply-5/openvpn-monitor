@@ -5,7 +5,8 @@ site=Example
 #longitude=-74
 maps=True
 geoip_data=/var/lib/GeoIP/GeoLite2-City.mmdb
-datetime_format=%d/%m/%Y %H:%M:%S
+# ConfigParser interpolates %, so the strftime directives are doubled here
+datetime_format=%%d/%%m/%%Y %%H:%%M:%%S
 
 [VPN1]
 host=localhost
