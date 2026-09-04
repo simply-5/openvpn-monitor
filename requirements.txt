@@ -1,4 +1,11 @@
-GeoIp
-geoip2==2.9.0
-bottle==0.12.17
-semantic_version==2.6.0
+# Reads the GeoLite2 .mmdb databases.
+# 4.0 dropped Python 2 along with the legacy GeoIP1 format,
+# which openvpn_interface only ever used through the separate GeoIp binding.
+geoip2>=4
+# 0.12 imports the cgi module, which Python 3.13 removed.
+bottle>=0.13
+semantic_version>=2.10
+
+# The legacy GeoIp binding is deliberately absent:
+# it compiles against libGeoIP, which Debian dropped after bookworm,
+# and openvpn_interface imports it optionally anyway.
