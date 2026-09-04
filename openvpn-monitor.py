@@ -37,7 +37,10 @@ class ConfigLoader:
     def __init__(self, config_path="openvpn-monitor.conf"):
         self.settings = {}
         self.vpns = {}
-        config = configparser.ConfigParser()
+        # No value here is a template for another one,
+        # and datetime_format is full of the % that interpolation claims,
+        # so it would only ever be in the way
+        config = configparser.ConfigParser(interpolation=None)
 
         if config.read(config_path):
             info(f"Using config file: {config_path}")
