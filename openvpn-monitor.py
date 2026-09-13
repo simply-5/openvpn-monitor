@@ -69,10 +69,11 @@ class ConfigLoader:
             "geoip_data": section.get("geoip_data", "/usr/share/GeoIP/GeoIPCity.dat"),
             "maps": section.getboolean("maps", True),
             # Passed to the ssh of the client detail route.
-            # Unset leaves ssh to its own defaults, which it resolves
-            # against the account's passwd home rather than $HOME -
-            # so a service running as a user without a real home
-            # has to name them here.
+            # ssh expands ~ against the home in the passwd database and
+            # ignores $HOME, so unset is right wherever that lookup lands
+            # on the credentials. A systemd DynamicUser= account has no
+            # home of its own, its passwd entry reads /, and nothing can
+            # point ssh elsewhere - which is what these are for.
             "ssh_identity_file": section.get("ssh_identity_file"),
             "ssh_known_hosts_file": section.get("ssh_known_hosts_file"),
         }
