@@ -68,6 +68,14 @@ class ConfigLoader:
             "datetime_format": section.get("datetime_format", "%d/%m/%Y %H:%M:%S"),
             "geoip_data": section.get("geoip_data", "/usr/share/GeoIP/GeoIPCity.dat"),
             "maps": section.getboolean("maps", True),
+            # Passed to the ssh of the client detail route.
+            # ssh expands ~ against the home in the passwd database and
+            # ignores $HOME, so unset is right wherever that lookup lands
+            # on the credentials. A systemd DynamicUser= account has no
+            # home of its own, its passwd entry reads /, and nothing can
+            # point ssh elsewhere - which is what these are for.
+            "ssh_identity_file": section.get("ssh_identity_file"),
+            "ssh_known_hosts_file": section.get("ssh_known_hosts_file"),
         }
 
     def parse_vpn_section(self, section):
@@ -187,18 +195,21 @@ def render_client(vpn, client):
         client = monitor.vpns[vpn]["sessions"][client]
     except KeyError:
         raise HTTPError(404, "Client not found")
+    command = ["ssh", "-o", "StrictHostKeyChecking=accept-new"]
+    if config.settings["ssh_identity_file"]:
+        command += ["-i", config.settings["ssh_identity_file"]]
+        # Without this the named key is only one candidate among the
+        # agent's and the default names, and a server that refuses too
+        # many of those closes the connection before reaching it
+        command += ["-o", "IdentitiesOnly=yes"]
+    if config.settings["ssh_known_hosts_file"]:
+        command += [
+            "-o",
+            f"UserKnownHostsFile={config.settings['ssh_known_hosts_file']}",
+        ]
     response = subprocess.run(
         # the actuall command gets overwritten by key options anyhow
-        [
-            "ssh",
-            "-o",
-            "StrictHostKeyChecking=accept-new",
-            f"pi@{client['local_ip']}",
-            "ip",
-            "addr",
-            "show",
-            "eth0",
-        ],
+        command + [f"pi@{client['local_ip']}", "ip", "addr", "show", "eth0"],
         check=True,
         capture_output=True,
         text=True,
