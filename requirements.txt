@@ -5,6 +5,7 @@ geoip2>=4
 # 0.12 imports the cgi module, which Python 3.13 removed.
 bottle>=0.13
 semantic_version>=2.10
+hyperscribe>=0.4.0
 
 # The legacy GeoIp binding is deliberately absent:
 # it compiles against libGeoIP, which Debian dropped after bookworm,

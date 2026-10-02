@@ -39,7 +39,7 @@ setup(
     license='GPLv3',
     keywords='web openvpn monitor',
     url='http://openvpn-monitor.openbytes.ie',
-    py_modules=['openvpn-monitor', ],
+    py_modules=['openvpn-monitor', 'openvpn_views', ],
     install_requires=install_requires,
     long_description=long_description,
     long_description_content_type='text/markdown',

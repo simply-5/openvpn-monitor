@@ -77,6 +77,16 @@ cd /var/www/html
 git clone https://github.com/furlongm/openvpn-monitor.git
 ```
 
+#### Install hyperscribe
+
+The pages are written with [hyperscribe](https://pypi.org/project/hyperscribe/),
+which is not packaged by the distributions.
+Install it into the Python environment that `mod_wsgi` uses:
+
+```shell
+pip install "hyperscribe>=0.4.0"
+```
+
 See [configuration](#configuration) for details on configuring openvpn-monitor.
 
 

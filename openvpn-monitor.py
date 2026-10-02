@@ -25,12 +25,18 @@ from datetime import datetime
 from logging import info, warning
 
 import bottle
-from bottle import BaseTemplate, HTTPError, request, static_file, view
+from bottle import HTTPError, request, static_file
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from openvpn_interface import OpenvpnMgmtInterface
+from openvpn_views import (
+    render_iframe,
+    render_index as render_index_page,
+    render_preformatted,
+    render_vpn as render_vpn_page,
+)
 
 
 class ConfigLoader:
@@ -87,72 +93,27 @@ class ConfigLoader:
         }
 
 
-class FormatUtils:
-    @staticmethod
-    def naturalsize(quantity, *, decimal_places=1, space="\u00A0", unit="B"):
-        for prefix in ["", "Ki", "Mi", "Gi", "Ti", "Pi"]:
-            if abs(quantity) < 1024.0 or prefix == "Pi":
-                break
-            quantity /= 1024.0
-        return f"{quantity:.{decimal_places}f}{space}{prefix}{unit}"
-
-    @classmethod
-    def data(cls, size):
-        return f"""
-            <data value="{ size }" title="{ size }">
-                { cls.naturalsize(size) }
-            </data>"""
-
-    @staticmethod
-    def datetime(datetime):
-        return f"""
-            <time
-                datetime="{ datetime.isoformat(timespec='milliseconds') }"
-                title="{ datetime.isoformat() }"
-            >{ datetime.strftime(config.settings["datetime_format"]) }</time>"""
-
-    @staticmethod
-    def timedelta(timedelta):
-        return f"""
-            <time
-                datetime="P{ timedelta.days }DT{ timedelta.seconds }.{ timedelta.microseconds }S"
-                title="{ timedelta }"
-            >{ str(timedelta)[: -len(".000000")] }</time>"""
-
-
 application = bottle.default_app()
 config = ConfigLoader()
 monitor = OpenvpnMgmtInterface(config.vpns, geoip_data=config.settings["geoip_data"])
 
-BaseTemplate.defaults.update(
-    {
-        "util": FormatUtils(),
-        "title": config.settings["site"],
-        "logo": config.settings["logo"],
-        "now": datetime.now,
-    }
-)
-
-
 @application.route("/")
-@view("index")
 def render_index():
-    return {
-        "navigation": {
-            "VPNs": {vpn: vpn.lower().replace(" ", "_") for vpn in monitor.vpns}
-        },
-        "vpns": monitor.vpns,
-        "show_map": config.settings["maps"],
-    }
+    return render_index_page(
+        config.settings,
+        monitor.vpns,
+        show_map=config.settings["maps"],
+        now=datetime.now(),
+    )
 
 
 @application.route("/vpns/<vpn>")
-@view("vpn")
 def render_vpn(vpn):
     try:
-        return {"vpn_name": vpn, "vpn": monitor.vpns[vpn]}
+        vpn_data = monitor.vpns[vpn]
     except KeyError:
         raise HTTPError(404, "VPN not found")
+    return render_vpn_page(config.settings, vpn, vpn_data, now=datetime.now())
 
 
 class ExtendedJSONEncoder(json.JSONEncoder):
@@ -179,17 +140,17 @@ def return_ansible_hosts(vpn):
 
 
 @application.route("/vpns/<vpn>/clients/<client>")
-@view("iframe")
 def render_client(vpn, client):
     try:
         client = monitor.vpns[vpn]["sessions"][client]
     except KeyError:
         raise HTTPError(404, "Client not found")
-    return {"address": f"http://{client['local_ip']}:8080"}
+    return render_iframe(
+        config.settings, f"http://{client['local_ip']}:8080", now=datetime.now()
+    )
 
 
 @application.route("/vpns/<vpn>/clients/<client>/ip")
-@view("preformatted")
 def render_client(vpn, client):
     try:
         client = monitor.vpns[vpn]["sessions"][client]
@@ -214,7 +175,7 @@ def render_client(vpn, client):
         capture_output=True,
         text=True,
     )
-    return {"text": response.stdout}
+    return render_preformatted(config.settings, response.stdout, now=datetime.now())
 
 
 @application.hook("before_request")
