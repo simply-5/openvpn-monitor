@@ -10,13 +10,16 @@ from hyperscribe import DocWriter, escape
 
 BOOTSTRAP_CSS = {
     "rel": "stylesheet",
-    "href": "https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css",
-    "integrity": "sha384-r4NyP46KrjDleawBgD5tp8Y7UzmLA05oM1iAEQ17CSuDqnUK2+k9luXQOfXJCJ4I",
+    "href": "https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css",
+    "integrity": "sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe",
     "crossorigin": "anonymous",
 }
+# Bootstrap 6 ships only ES modules.
+# The bundle includes Floating UI, which the menus need.
 BOOTSTRAP_JS = {
-    "src": "https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js",
-    "integrity": "sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/",
+    "type": "module",
+    "src": "https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js",
+    "integrity": "sha384-1a/pXj49ZQ1aHEmrJ+gMw1otqoVsYwlEnlD8mIfY2TV03r20Y0CN7uqx1tQogjPL",
     "crossorigin": "anonymous",
 }
 LEAFLET_CSS = {
@@ -117,10 +120,12 @@ def _page(
             _header(doc, title, logo, navigation or {})
             with t.main(
                 id="main",
-                class_="flex-grow-1" + ("" if fullpage else " container-xl"),
+                class_="flex-grow-1" + ("" if fullpage else " xl:container"),
             ):
                 yield
-            with t.footer(id="footer", class_="navbar navbar-dark bg-dark"):
+            with t.footer(
+                id="footer", class_="navbar bg-3", data={"bs-theme": "dark"}
+            ):
                 with t.div(class_="container"):
                     with t.div(class_="navbar-text"):
                         doc("Page automatically reloads every 5 minutes.")
@@ -135,7 +140,8 @@ def _header(
     v = doc.voids
     with t.header(
         id="header",
-        class_="sticky-top navbar navbar-expand-sm navbar-dark bg-dark",
+        class_="sticky-top navbar sm:navbar-expand bg-3",
+        data={"bs-theme": "dark"},
     ):
         with t.nav(class_="container"):
             with doc.inline(), t.a(class_="navbar-brand", href="/"):
@@ -150,39 +156,54 @@ def _header(
                 doc(escape(title))
                 doc(" - Status Monitor")
             with t.button(
-                class_="navbar-toggler",
+                class_="btn-icon navbar-toggler",
                 type="button",
-                data={"toggle": "collapse", "target": "#navbar"},
+                data={"bs-toggle": "drawer", "bs-target": "#navbar"},
                 aria={
                     "controls": "navbar",
                     "expanded": False,
                     "label": "Toggle navigation",
                 },
             ):
-                t.span("", class_="navbar-toggler-icon")
-            with t.div(id="navbar", class_="collapse navbar-collapse"):
-                with t.ul(class_="navbar-nav"):
+                t.span("", class_="navbar-toggler-icon", aria={"hidden": True})
+            # Below the breakpoint the navigation moves into a drawer.
+            with t.dialog(
+                id="navbar",
+                class_="drawer drawer-end",
+                tabindex=-1,
+                aria={"labelledby": "navbar_label"},
+            ):
+                with t.div(class_="drawer-header"):
+                    t.h5("Menu", class_="drawer-title", id="navbar_label")
+                    t.button(
+                        "",
+                        type="button",
+                        class_="btn-close",
+                        data={"bs-dismiss": "drawer"},
+                        aria={"label": "Close"},
+                    )
+                with t.div(class_="drawer-body"), t.ul(class_="navbar-nav"):
                     for label, anchor in navigation.items():
                         if isinstance(anchor, dict):
-                            _dropdown(doc, label, anchor)
+                            _menu(doc, label, anchor)
                         else:
-                            with t.li:
+                            with t.li(class_="nav-item"):
                                 t.a(escape(label), href=f"#{anchor}", class_="nav-link")
 
 
-def _dropdown(doc: DocWriter, label: str, items: Mapping[str, str]) -> None:
+def _menu(doc: DocWriter, label: str, items: Mapping[str, str]) -> None:
     t = doc.tags
-    with t.li(class_="nav-item dropdown"):
-        t.a(
-            label,
-            class_="nav-link dropdown-toggle",
-            href="#",
-            data={"toggle": "dropdown"},
+    with t.li(class_="nav-item"):
+        t.button(
+            escape(label),
+            type="button",
+            class_="nav-link",
+            data={"bs-toggle": "menu"},
+            aria={"expanded": False},
         )
-        with t.ul(class_="dropdown-menu"):
+        with t.div(class_="menu"):
             for sublabel, subanchor in items.items():
-                with t.li:
-                    t.a(escape(sublabel), class_="dropdown-item", href=f"#{subanchor}")
+                t.a(escape(sublabel), class_="menu-item", href=f"#{subanchor}")
 
 
 def _vpn_unreachable(doc: DocWriter, vpn_name: str, vpn: Mapping[str, Any]) -> None:
@@ -194,8 +215,8 @@ def _vpn_unreachable(doc: DocWriter, vpn_name: str, vpn: Mapping[str, Any]) -> N
     else:
         reason = "network or unix socket!"
 
-    with t.article(class_="card border-danger my-3", id=_anchor(vpn_name)):
-        t.h4(escape(vpn_name), class_="card-header text-danger")
+    with t.article(class_="card border-danger my-5", id=_anchor(vpn_name)):
+        t.h4(escape(vpn_name), class_="card-header fg-danger")
         with t.div(class_="card-body"):
             doc(escape(f"Could not connect to {reason}"))
 
@@ -227,10 +248,10 @@ def _vpn_summary(
                 t.td(escape(str(vpn_mode)))
                 t.td(escape(str(state["connected"])))
                 t.td(state["success"] == "SUCCESS")
-                t.td(stats["nclients"], class_="text-right")
-                with t.td(class_="text-right"):
+                t.td(stats["nclients"], class_="text-end")
+                with t.td(class_="text-end"):
                     _data(doc, stats["bytesin"])
-                with t.td(class_="text-right"):
+                with t.td(class_="text-end"):
                     _data(doc, stats["bytesout"])
                 with t.td:
                     _datetime(doc, settings, state["up_since"])
@@ -314,7 +335,7 @@ def _server_sessions(
                                 _datetime(doc, settings, session["last_seen"])
                             else:
                                 doc("Unknown")
-                        with t.td(class_="text-right"):
+                        with t.td(class_="text-end"):
                             _timedelta(doc, now - session["connected_since"])
                         if show_disconnect:
                             with t.td, t.form(method="post"):
@@ -327,7 +348,7 @@ def _server_sessions(
                                 t.button(
                                     "Disconnect",
                                     type="submit",
-                                    class_="btn btn-sm btn-danger",
+                                    class_="btn-solid btn-sm theme-danger",
                                 )
 
 
@@ -349,8 +370,8 @@ def _vpn(
         return
 
     vpn_mode = vpn["state"]["mode"]
-    with t.article(class_="card my-3", id=_anchor(vpn_name)):
-        with t.a(href=f"/vpns/{vpn_name}", class_="text-reset text-decoration-none"):
+    with t.article(class_="card my-5", id=_anchor(vpn_name)):
+        with t.a(href=f"/vpns/{vpn_name}", class_="fg-reset text-decoration-none"):
             t.h4(escape(vpn_name), class_="card-header")
         with t.ul(class_="list-group list-group-flush"):
             _vpn_summary(doc, settings, vpn, vpn_mode)
@@ -358,13 +379,13 @@ def _vpn(
                 _client_traffic(doc, vpn)
             elif vpn_mode == "Server":
                 _server_sessions(doc, settings, vpn_name, vpn, now)
-        t.div(escape(str(vpn["release"])), class_="card-footer text-muted")
+        t.div(escape(str(vpn["release"])), class_="card-footer fg-secondary")
 
 
 def _map(doc: DocWriter) -> None:
     t = doc.tags
     v = doc.voids
-    with t.article(class_="card my-3"):
+    with t.article(class_="card my-5"):
         v.link(**LEAFLET_CSS)
         t.script("", **LEAFLET_JS)
         t.h3("Map View", class_="card-header")
